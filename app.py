@@ -79,7 +79,7 @@ def load_clinical():
     df = pd.read_excel("PCOS_data_without_infertility.xlsx", sheet_name="Full_new")
     df.columns = df.columns.str.strip()
     df = df.rename(columns={
-        'PCOS (Y/N)':'PCOS',' Age (yrs)':'Age','Weight (Kg)':'Weight',
+        'PCOS (Y/N)':'PCOS','Age (yrs)':'Age','Weight (Kg)':'Weight',
         'Height(Cm)':'Height','BMI':'BMI','Pulse rate(bpm)':'Pulse',
         'RR (breaths/min)':'RR','Hb(g/dl)':'Hb','Cycle(R/I)':'Cycle',
         'Cycle length(days)':'CycleLength','Marraige Status (Yrs)':'MarriageYrs',
