@@ -334,7 +334,7 @@ def page_trends(gbd):
 
     filtered = gbd[(gbd['measure_name']==measure) &
                    (gbd['metric_name']=='Rate') &
-                   (gbd['location_name'].isin(countries))]
+                   (gbd['location_name'].isin(countries))].sort_values(['location_name','year'])
 
     fig = px.line(filtered, x='year', y='val', color='location_name',
                   markers=False,
@@ -363,7 +363,8 @@ def page_trends(gbd):
                   title=f'% Change in PCOS {measure.split("(")[0].strip()} Rate (1990–2023)')
     fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                        font=dict(family='Inter'), showlegend=False,
-                       coloraxis_showscale=False, margin=dict(t=50), height=500)
+                       coloraxis_showscale=False, margin=dict(t=50), height=500,
+                       yaxis=dict(autorange='reversed'))
     st.plotly_chart(fig2, use_container_width=True)
 
     st.dataframe(change.reset_index(drop=True), use_container_width=True, hide_index=True)
