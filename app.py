@@ -387,6 +387,13 @@ def page_obesity(gbd, obesity):
     })
 
     merged = pcos_yr.merge(obs_yr, on='location_name').dropna()
+    correlation = merged['PCOS_Rate'].corr(merged['Obesity_Pct'])
+
+    st.markdown(f"""<div class="metric-card" style="max-width:320px;">
+        <div class="metric-value">{correlation:.2f}</div>
+        <div class="metric-label">Correlation Coefficient</div>
+        <div class="metric-sub">PCOS Rate vs Female Obesity ({year})</div>
+    </div>""", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -429,7 +436,7 @@ def page_obesity(gbd, obesity):
                      (gbd['metric_name']=='Rate') &
                      (gbd['location_name']==country)][['year','val']].rename(columns={'val':'PCOS_Rate'})
     obs_trend = obesity[obesity['Entity']==country][['Year','Obesity_Pct']].rename(columns={'Year':'year'})
-    trend = pcos_trend.merge(obs_trend, on='year').dropna()
+    trend = pcos_trend.merge(obs_trend, on='year').dropna().sort_values('year')
 
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(x=trend['year'], y=trend['PCOS_Rate'], name='PCOS Prevalence Rate',
@@ -445,11 +452,13 @@ def page_obesity(gbd, obesity):
     )
     st.plotly_chart(fig3, use_container_width=True)
 
-    st.markdown("""<div class="info-box">
-        📌 <b>Key Insight:</b> A strong positive correlation exists between female obesity rates and PCOS prevalence 
-        across the MENA region. Countries with the highest female obesity rates (Egypt 55.9%, Qatar 49.3%, Kuwait 47%) 
-        also show among the highest PCOS burdens. This underscores obesity as a critical modifiable risk factor 
-        for PCOS in the region, with major implications for prevention policy.
+    st.markdown(f"""<div class="info-box">
+        📌 <b>Key Insight:</b> A moderate-to-strong positive correlation (r = {correlation:.2f}) exists between 
+        female obesity rates and PCOS prevalence across the MENA region in {year}. GCC countries such as Qatar, 
+        Kuwait, and Saudi Arabia show both elevated obesity and high PCOS burden, consistent with obesity's role 
+        as a major modifiable risk factor. Egypt is a notable outlier — highest female obesity (55.9%) but 
+        comparatively moderate PCOS prevalence — suggesting other factors (diagnostic access, genetics, 
+        healthcare infrastructure) also shape regional variation.
         <br><br>
         <b>Sources:</b> IHME GBD 2023; WHO Global Health Observatory via Our World in Data (NCD-RisC, Lancet 2024).
     </div>""", unsafe_allow_html=True)
