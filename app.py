@@ -668,36 +668,66 @@ def page_predictor(clinical):
         return model, acc, features
 
     model, acc, features = train_model(clinical)
+
+    # Population averages used as hidden defaults in Quick Mode
+    defaults = clinical[features].median(numeric_only=True)
+
     st.markdown(f"""<div class="info-box">
         🤖 <b>Model:</b> Random Forest Classifier &nbsp;|&nbsp;
         🎯 <b>Accuracy:</b> {acc*100:.1f}% &nbsp;|&nbsp;
         📊 <b>Training Data:</b> 541 patients, 18 features
     </div>""", unsafe_allow_html=True)
 
-    st.markdown("### Enter Patient Data")
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        age = st.number_input("Age (years)", 18, 55, 28)
-        bmi = st.number_input("BMI (kg/m²)", 15.0, 50.0, 24.0)
-        fsh = st.number_input("FSH (mIU/mL)", 0.0, 30.0, 5.0)
-        lh = st.number_input("LH (mIU/mL)", 0.0, 30.0, 3.0)
-        amh = st.number_input("AMH (ng/mL)", 0.0, 20.0, 2.5)
-        tsh = st.number_input("TSH (mIU/L)", 0.0, 20.0, 2.0)
-    with c2:
-        prl = st.number_input("Prolactin (ng/mL)", 0.0, 100.0, 20.0)
-        vitd3 = st.number_input("Vitamin D3 (ng/mL)", 0.0, 100.0, 25.0)
-        waisthip = st.number_input("Waist:Hip Ratio", 0.5, 1.5, 0.85)
-        follicleL = st.number_input("Follicle Count (Left)", 0, 30, 5)
-        follicleR = st.number_input("Follicle Count (Right)", 0, 30, 5)
-    with c3:
-        st.markdown("**Symptoms**")
-        weight_gain = st.selectbox("Weight Gain", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        hair_growth = st.selectbox("Excessive Hair Growth", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        hair_loss = st.selectbox("Hair Loss", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        pimples = st.selectbox("Pimples/Acne", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        fastfood = st.selectbox("Fast Food", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        exercise = st.selectbox("Regular Exercise", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+    mode = st.radio("Mode", ["⚡ Quick Mode (presentation-friendly)", "🔬 Full Clinical Mode"], horizontal=True)
+
+    if mode == "⚡ Quick Mode (presentation-friendly)":
+        st.caption("Simplified inputs for a quick demo. Hormone and ultrasound values use typical clinical averages behind the scenes.")
+        c1, c2 = st.columns(2)
+        with c1:
+            age = st.number_input("Age (years)", 18, 55, 28)
+            bmi = st.number_input("BMI (kg/m²)", 15.0, 50.0, 24.0)
+            weight_gain = st.selectbox("Sudden Weight Gain", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            hair_growth = st.selectbox("Excessive Hair Growth", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+        with c2:
+            skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            hair_loss = st.selectbox("Hair Loss / Thinning", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            pimples = st.selectbox("Acne / Pimples", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            irregular_cycle = st.selectbox("Irregular Periods", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+
+        # Use population medians for the hidden clinical fields
+        fsh, lh, amh, tsh, prl, vitd3 = (defaults['FSH'], defaults['LH'], defaults['AMH'],
+                                          defaults['TSH'], defaults['PRL'], defaults['VitD3'])
+        waisthip = defaults['WaistHip']
+        # Irregular cycle is a strong PCOS marker — nudge follicle counts since they're not directly asked
+        follicleL = defaults['FollicleL'] + (3 if irregular_cycle else 0)
+        follicleR = defaults['FollicleR'] + (3 if irregular_cycle else 0)
+        fastfood, exercise = int(defaults['FastFood']), int(defaults['Exercise'])
+
+    else:
+        st.markdown("### Enter Patient Data")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            age = st.number_input("Age (years)", 18, 55, 28)
+            bmi = st.number_input("BMI (kg/m²)", 15.0, 50.0, 24.0)
+            fsh = st.number_input("FSH (mIU/mL)", 0.0, 30.0, 5.0)
+            lh = st.number_input("LH (mIU/mL)", 0.0, 30.0, 3.0)
+            amh = st.number_input("AMH (ng/mL)", 0.0, 20.0, 2.5)
+            tsh = st.number_input("TSH (mIU/L)", 0.0, 20.0, 2.0)
+        with c2:
+            prl = st.number_input("Prolactin (ng/mL)", 0.0, 100.0, 20.0)
+            vitd3 = st.number_input("Vitamin D3 (ng/mL)", 0.0, 100.0, 25.0)
+            waisthip = st.number_input("Waist:Hip Ratio", 0.5, 1.5, 0.85)
+            follicleL = st.number_input("Follicle Count (Left)", 0, 30, 5)
+            follicleR = st.number_input("Follicle Count (Right)", 0, 30, 5)
+        with c3:
+            st.markdown("**Symptoms**")
+            weight_gain = st.selectbox("Weight Gain", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            hair_growth = st.selectbox("Excessive Hair Growth", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            hair_loss = st.selectbox("Hair Loss", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            pimples = st.selectbox("Pimples/Acne", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            fastfood = st.selectbox("Fast Food", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
+            exercise = st.selectbox("Regular Exercise", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
 
     if st.button("🔍 Predict PCOS Risk", use_container_width=True):
         input_data = pd.DataFrame([[age,bmi,fsh,lh,amh,tsh,prl,vitd3,waisthip,
