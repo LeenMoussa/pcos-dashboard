@@ -99,6 +99,13 @@ def load_clinical():
     })
     df['AMH'] = pd.to_numeric(df['AMH'], errors='coerce')
     df['betaHCG2'] = pd.to_numeric(df['betaHCG2'], errors='coerce')
+
+    # Data cleaning: remove clinically implausible outliers (likely data entry errors in source dataset)
+    # Normal physiological ranges: FSH <50, LH <50, VitD3 <200 ng/mL
+    for col, upper_bound in [('FSH', 50), ('LH', 50), ('VitD3', 200)]:
+        df.loc[df[col] > upper_bound, col] = pd.NA
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
     df['PCOS_Label'] = df['PCOS'].map({1:'PCOS Positive', 0:'PCOS Negative'})
     df['BMI_Category'] = pd.cut(df['BMI'], bins=[0,18.5,24.9,29.9,100],
         labels=['Underweight','Normal','Overweight','Obese'])
