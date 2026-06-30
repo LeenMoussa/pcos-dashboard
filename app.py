@@ -22,8 +22,8 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-    .main { background-color: #f8f4f9; }
-    .stApp { background-color: #f8f4f9; }
+    .main { background-color: #e9dcf0; }
+    .stApp { background-color: #e9dcf0; }
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #6b2d8b 0%, #9b59b6 100%);
     }
