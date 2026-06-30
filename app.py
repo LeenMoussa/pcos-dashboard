@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 # ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="PCOS Analytics Dashboard",
-    page_icon="🩺",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -27,7 +27,18 @@ st.markdown("""
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #6b2d8b 0%, #9b59b6 100%);
     }
-    section[data-testid="stSidebar"] * { color: white !important; }
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] .stMarkdown { color: white !important; }
+    /* Dropdown/select popup menus render outside the colored sidebar background,
+       so their text must stay dark regardless of the sidebar's white text rule */
+    div[data-baseweb="popover"] * ,
+    div[data-baseweb="menu"] *,
+    ul[role="listbox"] * { color: #262730 !important; }
     .metric-card {
         background: white;
         border-radius: 16px;
@@ -57,13 +68,13 @@ def check_password():
         with col2:
             st.markdown("""
             <div style="background:white;border-radius:20px;padding:48px;box-shadow:0 8px 32px rgba(107,45,139,0.15);text-align:center;margin-top:80px;">
-                <div style="font-size:3rem;margin-bottom:12px;">🩺</div>
+                <div style="font-size:3rem;margin-bottom:12px;"></div>
                 <div style="font-size:2rem;font-weight:700;color:#6b2d8b;margin-bottom:8px;">PCOS Analytics</div>
                 <div style="color:#888;margin-bottom:32px;font-size:0.95rem;">MENA Region Healthcare Dashboard<br>MSBA382 – Healthcare Analytics</div>
             </div>
             """, unsafe_allow_html=True)
             password = st.text_input("Enter Dashboard Password", type="password", placeholder="Enter password...")
-            if st.button("🔓 Access Dashboard", use_container_width=True):
+            if st.button(" Access Dashboard", use_container_width=True):
                 if password == "pcos2026":
                     st.session_state.authenticated = True
                     st.rerun()
@@ -148,33 +159,33 @@ MENA_COUNTRIES = list(ISO_MAP.keys())
 # ─── SIDEBAR ───────────────────────────────────────────────────────────────────
 def render_sidebar():
     with st.sidebar:
-        st.markdown("### 🩺 PCOS Analytics")
+        st.markdown("### PCOS Analytics")
         st.markdown("**MENA Region Dashboard**")
         st.markdown("---")
         page = st.radio("Navigate", [
-            "🏠 Overview",
-            "🗺️ MENA Burden Map",
-            "📈 Trends Over Time",
-            "⚖️ Obesity & PCOS Link",
-            "👩 Patient Profiles",
-            "🧬 Hormonal Analysis",
-            "⚕️ Symptom Explorer",
-            "🤖 PCOS Predictor"
+            "Overview",
+            "MENA Burden Map",
+            "Trends Over Time",
+            "Obesity & PCOS Link",
+            "Patient Profiles",
+            "Hormonal Analysis",
+            "Symptom Explorer",
+            "PCOS Predictor"
         ])
         st.markdown("---")
         st.markdown("**Data Sources**")
-        st.markdown("📊 IHME GBD 2023 (6,426 rows)")
-        st.markdown("📊 WHO Obesity Data (9,270 rows)")
-        st.markdown("📊 Clinical Dataset (541 patients)")
+        st.markdown("IHME GBD 2023 (6,426 rows)")
+        st.markdown("WHO Obesity Data (9,270 rows)")
+        st.markdown("Clinical Dataset (541 patients)")
         st.markdown("---")
-        if st.button("🔒 Logout"):
+        if st.button("Logout"):
             st.session_state.authenticated = False
             st.rerun()
     return page
 
 # ─── PAGE 1: OVERVIEW ──────────────────────────────────────────────────────────
 def page_overview(clinical, gbd):
-    st.markdown("## 🏠 PCOS in the MENA Region — Overview")
+    st.markdown("## PCOS in the MENA Region — Overview")
     st.markdown("*Polycystic Ovary Syndrome (PCOS) is the most common endocrine disorder in women of reproductive age. This dashboard integrates clinical patient data with official IHME Global Burden of Disease 2023 statistics.*")
 
     # KPI from real GBD data
@@ -243,7 +254,7 @@ def page_overview(clinical, gbd):
 
     # Clinical dataset summary
     st.markdown("---")
-    st.markdown('<div class="section-header">📋 Clinical Dataset Summary (541 Patients)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"> Clinical Dataset Summary (541 Patients)</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     pcos_pct = round(clinical['PCOS'].mean()*100,1)
     with c1:
@@ -272,7 +283,7 @@ def page_overview(clinical, gbd):
         </div>""", unsafe_allow_html=True)
 
     st.markdown("""<div class="info-box">
-        📌 <b>Data Sources:</b> This dashboard integrates three official datasets:
+         <b>Data Sources:</b> This dashboard integrates three official datasets:
         (1) <b>IHME Global Burden of Disease 2023</b> — prevalence, incidence and DALYs for 21 MENA countries from 1990–2023;
         (2) <b>WHO Global Health Observatory</b> via Our World in Data — female obesity rates by country 1980–2024;
         (3) <b>Clinical PCOS Dataset</b> (Kaggle/UCI) — 541 patients with 44 clinical variables for patient-level analysis.
@@ -280,7 +291,7 @@ def page_overview(clinical, gbd):
 
 # ─── PAGE 2: MENA MAP ──────────────────────────────────────────────────────────
 def page_map(gbd):
-    st.markdown("## 🗺️ PCOS Burden Map — MENA Region")
+    st.markdown("## PCOS Burden Map — MENA Region")
     st.markdown("*Real IHME Global Burden of Disease 2023 data. Select measure, metric and year.*")
 
     col1, col2, col3 = st.columns(3)
@@ -312,7 +323,7 @@ def page_map(gbd):
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
-    st.markdown('<div class="section-header">📋 Country Data Table</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"> Country Data Table</div>', unsafe_allow_html=True)
     table = filtered[['location_name','val','upper','lower']].sort_values('val', ascending=False).copy()
     table.columns = ['Country', f'{label}', 'Upper (95% UI)', 'Lower (95% UI)']
     table = table.reset_index(drop=True)
@@ -322,13 +333,13 @@ def page_map(gbd):
     st.dataframe(table, use_container_width=True, hide_index=True)
 
     st.markdown("""<div class="warning-box">
-        📌 <b>Source:</b> Institute for Health Metrics and Evaluation (IHME). GBD Results. Seattle, WA: IHME, University of Washington, 2025.
+         <b>Source:</b> Institute for Health Metrics and Evaluation (IHME). GBD Results. Seattle, WA: IHME, University of Washington, 2025.
         Available from vizhub.healthdata.org/gbd-results/. Values shown with 95% Uncertainty Intervals.
     </div>""", unsafe_allow_html=True)
 
 # ─── PAGE 3: TRENDS ────────────────────────────────────────────────────────────
 def page_trends(gbd):
-    st.markdown("## 📈 PCOS Burden Trends 1990–2023")
+    st.markdown("## PCOS Burden Trends 1990–2023")
     st.markdown("*Track how PCOS burden has evolved across MENA countries over 34 years using official IHME data.*")
 
     col1, col2 = st.columns(2)
@@ -356,7 +367,7 @@ def page_trends(gbd):
 
     # % change table
     st.markdown("---")
-    st.markdown('<div class="section-header">📊 Total Change 1990–2023 by Country</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"> Total Change 1990–2023 by Country</div>', unsafe_allow_html=True)
     all_rate = gbd[(gbd['measure_name']==measure) & (gbd['metric_name']=='Rate')]
     y1990 = all_rate[all_rate['year']==1990][['location_name','val']].rename(columns={'val':'val_1990'})
     y2023 = all_rate[all_rate['year']==2023][['location_name','val']].rename(columns={'val':'val_2023'})
@@ -378,7 +389,7 @@ def page_trends(gbd):
 
 # ─── PAGE 4: OBESITY & PCOS ────────────────────────────────────────────────────
 def page_obesity(gbd, obesity):
-    st.markdown("## ⚖️ Obesity & PCOS — The MENA Connection")
+    st.markdown("## Obesity & PCOS — The MENA Connection")
     st.markdown("*Obesity is a major risk factor for PCOS. This page cross-analyses WHO female obesity rates with IHME PCOS burden data across the MENA region.*")
 
     year = st.slider("Select Year", 1990, 2022, 2022)
@@ -436,7 +447,7 @@ def page_obesity(gbd, obesity):
 
     # Trend comparison
     st.markdown("---")
-    st.markdown('<div class="section-header">📈 Obesity & PCOS Trends Over Time</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"> Obesity & PCOS Trends Over Time</div>', unsafe_allow_html=True)
     country = st.selectbox("Select Country", sorted(merged['location_name'].tolist()), index=0)
 
     pcos_trend = gbd[(gbd['measure_name']=='Prevalence') &
@@ -460,7 +471,7 @@ def page_obesity(gbd, obesity):
     st.plotly_chart(fig3, use_container_width=True)
 
     st.markdown(f"""<div class="info-box">
-        📌 <b>Key Insight:</b> A moderate-to-strong positive correlation (r = {correlation:.2f}) exists between 
+         <b>Key Insight:</b> A moderate-to-strong positive correlation (r = {correlation:.2f}) exists between 
         female obesity rates and PCOS prevalence across the MENA region in {year}. GCC countries such as Qatar, 
         Kuwait, and Saudi Arabia show both elevated obesity and high PCOS burden, consistent with obesity's role 
         as a major modifiable risk factor. Egypt is a notable outlier — highest female obesity (55.9%) but 
@@ -472,7 +483,7 @@ def page_obesity(gbd, obesity):
 
 # ─── PAGE 5: PATIENT PROFILES ──────────────────────────────────────────────────
 def page_patients(clinical):
-    st.markdown("## 👩 Patient Profiles")
+    st.markdown("## Patient Profiles")
     st.markdown("*Clinical-level analysis of 541 patients. Explore how physical characteristics differ between PCOS positive and negative patients.*")
 
     col1, col2, col3 = st.columns(3)
@@ -529,7 +540,7 @@ def page_patients(clinical):
 
     # Lifestyle
     st.markdown("---")
-    st.markdown('<div class="section-header">🍔 Lifestyle Factors</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"> Lifestyle Factors</div>', unsafe_allow_html=True)
     lc1, lc2 = st.columns(2)
     with lc1:
         lifestyle = df.groupby('PCOS_Label')[['FastFood','Exercise']].mean().reset_index()
@@ -552,7 +563,7 @@ def page_patients(clinical):
 
 # ─── PAGE 6: HORMONAL ANALYSIS ─────────────────────────────────────────────────
 def page_hormones(clinical):
-    st.markdown("## 🧬 Hormonal Analysis")
+    st.markdown("## Hormonal Analysis")
     st.markdown("*Hormonal imbalances are the key diagnostic markers of PCOS.*")
 
     # 1. Summary statistics table
@@ -598,7 +609,7 @@ def page_hormones(clinical):
 
 # ─── PAGE 7: SYMPTOMS ──────────────────────────────────────────────────────────
 def page_symptoms(clinical):
-    st.markdown("## ⚕️ Symptom Explorer")
+    st.markdown("## Symptom Explorer")
     st.markdown("*Analyze clinical symptoms across PCOS positive and negative patients.*")
 
     symptoms = {'WeightGain':'Weight Gain','HairGrowth':'Excessive Hair Growth',
@@ -651,7 +662,7 @@ def page_symptoms(clinical):
 
 # ─── PAGE 8: ML PREDICTOR ──────────────────────────────────────────────────────
 def page_predictor(clinical):
-    st.markdown("## 🤖 PCOS Risk Predictor")
+    st.markdown("## PCOS Risk Predictor")
     st.markdown("*Random Forest model trained on 541 clinical patients. Enter values to predict PCOS likelihood.*")
 
     @st.cache_resource
@@ -673,14 +684,14 @@ def page_predictor(clinical):
     defaults = clinical[features].median(numeric_only=True)
 
     st.markdown(f"""<div class="info-box">
-        🤖 <b>Model:</b> Random Forest Classifier &nbsp;|&nbsp;
-        🎯 <b>Accuracy:</b> {acc*100:.1f}% &nbsp;|&nbsp;
-        📊 <b>Training Data:</b> 541 patients, 18 features
+         <b>Model:</b> Random Forest Classifier &nbsp;|&nbsp;
+         <b>Accuracy:</b> {acc*100:.1f}% &nbsp;|&nbsp;
+         <b>Training Data:</b> 541 patients, 18 features
     </div>""", unsafe_allow_html=True)
 
-    mode = st.radio("Mode", ["⚡ Quick Mode (presentation-friendly)", "🔬 Full Clinical Mode"], horizontal=True)
+    mode = st.radio("Mode", ["Quick Mode (presentation-friendly)", "Full Clinical Mode"], horizontal=True)
 
-    if mode == "⚡ Quick Mode (presentation-friendly)":
+    if mode == "Quick Mode (presentation-friendly)":
         st.caption("Simplified inputs for a quick demo. Hormone and ultrasound values use typical clinical averages behind the scenes.")
         c1, c2 = st.columns(2)
         with c1:
@@ -729,7 +740,7 @@ def page_predictor(clinical):
             fastfood = st.selectbox("Fast Food", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
             exercise = st.selectbox("Regular Exercise", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
 
-    if st.button("🔍 Predict PCOS Risk", use_container_width=True):
+    if st.button(" Predict PCOS Risk", use_container_width=True):
         input_data = pd.DataFrame([[age,bmi,fsh,lh,amh,tsh,prl,vitd3,waisthip,
                                     weight_gain,hair_growth,skin_dark,hair_loss,
                                     pimples,fastfood,exercise,follicleL,follicleR]], columns=features)
@@ -738,9 +749,9 @@ def page_predictor(clinical):
         risk_pct = prob[1]*100
 
         if pred==1:
-            st.error(f"⚠️ **PCOS Likely** — Risk Score: **{risk_pct:.1f}%**")
+            st.error(f"**PCOS Likely** — Risk Score: **{risk_pct:.1f}%**")
         else:
-            st.success(f"✅ **PCOS Unlikely** — Risk Score: **{risk_pct:.1f}%**")
+            st.success(f"**PCOS Unlikely** — Risk Score: **{risk_pct:.1f}%**")
 
         fig = go.Figure(go.Indicator(
             mode="gauge+number", value=risk_pct,
@@ -762,7 +773,7 @@ def page_predictor(clinical):
         st.plotly_chart(fig2, use_container_width=True)
 
         st.markdown("""<div class="warning-box">
-            ⚠️ <b>Disclaimer:</b> This tool is for educational and research purposes only and is not a substitute for clinical diagnosis.
+             <b>Disclaimer:</b> This tool is for educational and research purposes only and is not a substitute for clinical diagnosis.
         </div>""", unsafe_allow_html=True)
 
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
@@ -774,21 +785,21 @@ def main():
     obesity = load_obesity()
     page = render_sidebar()
 
-    if page == "🏠 Overview":
+    if page == "Overview":
         page_overview(clinical, gbd)
-    elif page == "🗺️ MENA Burden Map":
+    elif page == "MENA Burden Map":
         page_map(gbd)
-    elif page == "📈 Trends Over Time":
+    elif page == "Trends Over Time":
         page_trends(gbd)
-    elif page == "⚖️ Obesity & PCOS Link":
+    elif page == "Obesity & PCOS Link":
         page_obesity(gbd, obesity)
-    elif page == "👩 Patient Profiles":
+    elif page == "Patient Profiles":
         page_patients(clinical)
-    elif page == "🧬 Hormonal Analysis":
+    elif page == "Hormonal Analysis":
         page_hormones(clinical)
-    elif page == "⚕️ Symptom Explorer":
+    elif page == "Symptom Explorer":
         page_symptoms(clinical)
-    elif page == "🤖 PCOS Predictor":
+    elif page == "PCOS Predictor":
         page_predictor(clinical)
 
 if __name__ == "__main__":
