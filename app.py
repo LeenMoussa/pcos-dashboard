@@ -555,6 +555,26 @@ def page_hormones(clinical):
     st.markdown("## 🧬 Hormonal Analysis")
     st.markdown("*Hormonal imbalances are the key diagnostic markers of PCOS.*")
 
+    # 1. Summary statistics table
+    hormone_cols = ['FSH','LH','FSH_LH','AMH','TSH','PRL','VitD3']
+    stats = clinical.groupby('PCOS_Label')[hormone_cols].mean().round(2).T
+    st.markdown('<div class="section-header">Hormone Summary Statistics</div>', unsafe_allow_html=True)
+    st.dataframe(stats.style.highlight_max(axis=1, color='#b48ec9'), use_container_width=True)
+
+    # 2. Correlation heatmap
+    st.markdown("---")
+    corr_cols = ['FSH','LH','AMH','TSH','PRL','VitD3','BMI','PCOS']
+    corr = clinical[corr_cols].dropna().corr().round(2)
+    fig3 = px.imshow(corr, text_auto=True, aspect='auto',
+                     color_continuous_scale=['#4a1a6e','white','#9b59b6'],
+                     title='Correlation Matrix: Hormones & PCOS')
+    fig3.update_layout(paper_bgcolor='white', font=dict(family='Inter'),
+                       margin=dict(t=50), height=450)
+    st.plotly_chart(fig3, use_container_width=True)
+
+    # 3. Distribution charts (interactive hormone selector)
+    st.markdown("---")
+    st.markdown('<div class="section-header">Hormone Distribution Explorer</div>', unsafe_allow_html=True)
     hormones = {'FSH':'FSH (mIU/mL)','LH':'LH (mIU/mL)','AMH':'AMH (ng/mL)',
                 'TSH':'TSH (mIU/L)','PRL':'Prolactin (ng/mL)','VitD3':'Vitamin D3 (ng/mL)'}
     selected = st.selectbox("Select Hormone", list(hormones.keys()), format_func=lambda x: hormones[x])
@@ -576,22 +596,6 @@ def page_hormones(clinical):
                            font=dict(family='Inter'), legend_title='', margin=dict(t=50))
         st.plotly_chart(fig2, use_container_width=True)
 
-    st.markdown("---")
-    hormone_cols = ['FSH','LH','FSH_LH','AMH','TSH','PRL','VitD3']
-    stats = clinical.groupby('PCOS_Label')[hormone_cols].mean().round(2).T
-    st.markdown('<div class="section-header">Hormone Summary Statistics</div>', unsafe_allow_html=True)
-    st.dataframe(stats.style.highlight_max(axis=1, color='#b48ec9'), use_container_width=True)
-
-    st.markdown("---")
-    corr_cols = ['FSH','LH','AMH','TSH','PRL','VitD3','BMI','PCOS']
-    corr = clinical[corr_cols].dropna().corr().round(2)
-    fig3 = px.imshow(corr, text_auto=True, aspect='auto',
-                     color_continuous_scale=['#4a1a6e','white','#9b59b6'],
-                     title='Correlation Matrix: Hormones & PCOS')
-    fig3.update_layout(paper_bgcolor='white', font=dict(family='Inter'),
-                       margin=dict(t=50), height=450)
-    st.plotly_chart(fig3, use_container_width=True)
-
 # ─── PAGE 7: SYMPTOMS ──────────────────────────────────────────────────────────
 def page_symptoms(clinical):
     st.markdown("## ⚕️ Symptom Explorer")
@@ -610,11 +614,13 @@ def page_symptoms(clinical):
 
     fig = px.bar(sym_df, x='Symptom', y='Prevalence (%)', color='PCOS Status', barmode='group',
                  color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                 text='Prevalence (%)', title='Symptom Prevalence: PCOS+ vs PCOS−')
+                 text='Prevalence (%)', title='Symptom Prevalence: PCOS Positive vs Negative')
     fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                       font=dict(family='Inter'), legend_title='',
-                      legend=dict(orientation='h', y=1.1), height=420, margin=dict(t=20))
+                      legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+                      title=dict(y=0.97, yanchor='top'),
+                      height=460, margin=dict(t=90))
     st.plotly_chart(fig, use_container_width=True)
 
     c1, c2 = st.columns(2)
