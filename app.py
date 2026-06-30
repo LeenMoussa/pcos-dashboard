@@ -393,8 +393,7 @@ def page_obesity(gbd, obesity):
         fig = px.scatter(merged, x='Obesity_Pct', y='PCOS_Rate',
                          text='location_name', size='PCOS_Rate',
                          color='PCOS_Rate', color_continuous_scale=['#e8d5f5','#6b2d8b'],
-                         labels={'Obesity_Pct':'Female Obesity Rate (%)','PCOS_Rate':'PCOS Prevalence Rate per 100,000'},
-                         trendline='ols')
+                         labels={'Obesity_Pct':'Female Obesity Rate (%)','PCOS_Rate':'PCOS Prevalence Rate per 100,000'})
         fig.update_traces(textposition='top center', textfont_size=9)
         fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                           font=dict(family='Inter'), showlegend=False,
