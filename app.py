@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="PCOS Analytics Dashboard",
     page_icon="",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ─── CUSTOM CSS ────────────────────────────────────────────────────────────────
@@ -24,38 +24,30 @@ st.markdown("""
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     .main { background-color: #e9dcf0; }
     .stApp { background-color: #e9dcf0; }
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #6b2d8b 0%, #9b59b6 100%);
-    }
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] .stMarkdown { color: white !important; }
-    /* Dropdown/select popup menus render outside the colored sidebar background,
-       so their text must stay dark regardless of the sidebar's white text rule */
     div[data-baseweb="popover"] * ,
     div[data-baseweb="menu"] *,
     ul[role="listbox"] * { color: #262730 !important; }
     .metric-card {
         background: white;
         border-radius: 16px;
-        padding: 24px;
+        padding: 20px;
         box-shadow: 0 2px 12px rgba(107,45,139,0.08);
         border-left: 5px solid #9b59b6;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
-    .metric-value { font-size: 2.2rem; font-weight: 700; color: #6b2d8b; line-height: 1; }
-    .metric-label { font-size: 0.85rem; color: #888; margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .metric-sub { font-size: 0.8rem; color: #bbb; margin-top: 4px; }
-    .section-header { font-size: 1.4rem; font-weight: 700; color: #6b2d8b; margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #b48ec9; }
-    .info-box { background: linear-gradient(135deg, #f3e8ff, #fdf2ff); border-radius: 12px; padding: 20px; border: 1px solid #e0c4f5; margin: 12px 0; }
-    .warning-box { background: linear-gradient(135deg, #fff3cd, #fff8e1); border-radius: 12px; padding: 20px; border: 1px solid #ffd54f; margin: 12px 0; }
+    .metric-value { font-size: 1.9rem; font-weight: 700; color: #6b2d8b; line-height: 1; }
+    .metric-label { font-size: 0.78rem; color: #888; margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-sub { font-size: 0.75rem; color: #bbb; margin-top: 4px; }
+    .section-header { font-size: 1.25rem; font-weight: 700; color: #6b2d8b; margin: 8px 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid #b48ec9; }
+    .info-box { background: linear-gradient(135deg, #f3e8ff, #fdf2ff); border-radius: 12px; padding: 16px 20px; border: 1px solid #e0c4f5; margin: 10px 0; font-size: 0.92rem; }
+    .warning-box { background: linear-gradient(135deg, #fff3cd, #fff8e1); border-radius: 12px; padding: 16px 20px; border: 1px solid #ffd54f; margin: 10px 0; font-size: 0.88rem; }
+    .panel { background: white; border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 12px rgba(107,45,139,0.08); margin-bottom: 14px; }
+    .filter-bar { background: #6b2d8b; border-radius: 14px; padding: 14px 22px; margin-bottom: 18px; }
+    .filter-bar label, .filter-bar p, .filter-bar span, .filter-bar .stMarkdown { color: white !important; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     div[data-testid="stDecoration"] { display: none; }
+    h1, h2, h3 { color: #2A1B33; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -68,13 +60,12 @@ def check_password():
         with col2:
             st.markdown("""
             <div style="background:white;border-radius:20px;padding:48px;box-shadow:0 8px 32px rgba(107,45,139,0.15);text-align:center;margin-top:80px;">
-                <div style="font-size:3rem;margin-bottom:12px;"></div>
                 <div style="font-size:2rem;font-weight:700;color:#6b2d8b;margin-bottom:8px;">PCOS Analytics</div>
-                <div style="color:#888;margin-bottom:32px;font-size:0.95rem;">MENA Region Healthcare Dashboard<br>MSBA382 – Healthcare Analytics</div>
+                <div style="color:#888;margin-bottom:32px;font-size:0.95rem;">MENA Region Healthcare Dashboard<br>MSBA382 \u2013 Healthcare Analytics</div>
             </div>
             """, unsafe_allow_html=True)
             password = st.text_input("Enter Dashboard Password", type="password", placeholder="Enter password...")
-            if st.button(" Access Dashboard", use_container_width=True):
+            if st.button("Access Dashboard", use_container_width=True):
                 if password == "pcos2026":
                     st.session_state.authenticated = True
                     st.rerun()
@@ -110,28 +101,23 @@ def load_clinical():
     })
     df['AMH'] = pd.to_numeric(df['AMH'], errors='coerce')
     df['betaHCG2'] = pd.to_numeric(df['betaHCG2'], errors='coerce')
-
-    # Data cleaning: remove clinically implausible outliers (likely data entry errors in source dataset)
-    # Normal physiological ranges: FSH <50, LH <50, VitD3 <200 ng/mL
     for col, upper_bound in [('FSH', 50), ('LH', 50), ('VitD3', 200)]:
         df.loc[df[col] > upper_bound, col] = pd.NA
         df[col] = pd.to_numeric(df[col], errors='coerce')
-
     df['PCOS_Label'] = df['PCOS'].map({1:'PCOS Positive', 0:'PCOS Negative'})
     df['BMI_Category'] = pd.cut(df['BMI'], bins=[0,18.5,24.9,29.9,100],
         labels=['Underweight','Normal','Overweight','Obese'])
     df['Age_Group'] = pd.cut(df['Age'], bins=[18,24,29,34,39,50],
-        labels=['20–24','25–29','30–34','35–39','40+'])
+        labels=['20\u201324','25\u201329','30\u201334','35\u201339','40+'])
     return df
 
 @st.cache_data
 def load_gbd():
     df = pd.read_csv("IHME-GBD_2023_DATA-f76e773e-1.csv")
-    # Standardize country names
     df['location_name'] = df['location_name'].replace({
         'Iran (Islamic Republic of)': 'Iran',
         'Syrian Arab Republic': 'Syria',
-        'Türkiye': 'Turkey'
+        'T\u00fcrkiye': 'Turkey'
     })
     return df
 
@@ -139,11 +125,6 @@ def load_gbd():
 def load_obesity():
     df = pd.read_csv("share-of-females-defined-as-obese.csv")
     df.columns = ['Entity', 'Code', 'Year', 'Obesity_Pct']
-    df['Entity'] = df['Entity'].replace({
-        'Iran': 'Iran',
-        'Syria': 'Syria',
-        'Turkey': 'Turkey'
-    })
     return df
 
 ISO_MAP = {
@@ -153,654 +134,226 @@ ISO_MAP = {
     'Saudi Arabia':'SAU','Sudan':'SDN','Syria':'SYR','Tunisia':'TUN',
     'Turkey':'TUR','United Arab Emirates':'ARE','Yemen':'YEM'
 }
-
 MENA_COUNTRIES = list(ISO_MAP.keys())
 
-# ─── SIDEBAR ───────────────────────────────────────────────────────────────────
-def render_sidebar():
-    with st.sidebar:
-        st.markdown("### PCOS Analytics")
-        st.markdown("**MENA Region Dashboard**")
-        st.markdown("---")
-        page = st.radio("Navigate", [
-            "Overview",
-            "MENA Burden Map",
-            "Trends Over Time",
-            "Obesity & PCOS Link",
-            "Patient Profiles",
-            "Hormonal Analysis",
-            "Symptom Explorer",
-            "PCOS Predictor"
-        ])
-        st.markdown("---")
-        st.markdown("**Data Sources**")
-        st.markdown("IHME GBD 2023 (6,426 rows)")
-        st.markdown("WHO Obesity Data (9,270 rows)")
-        st.markdown("Clinical Dataset (541 patients)")
-        st.markdown("---")
-        if st.button("Logout"):
-            st.session_state.authenticated = False
-            st.rerun()
-    return page
+@st.cache_resource
+def train_model(df):
+    features = ['Age','BMI','FSH','LH','AMH','TSH','PRL','VitD3',
+                'WaistHip','WeightGain','HairGrowth','SkinDarkening',
+                'HairLoss','Pimples','FastFood','Exercise','FollicleL','FollicleR']
+    mdf = df[features+['PCOS']].dropna()
+    X, y = mdf[features], mdf['PCOS']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+    acc = accuracy_score(y_test, model.predict(X_test))
+    return model, acc, features
 
-# ─── PAGE 1: OVERVIEW ──────────────────────────────────────────────────────────
-def page_overview(clinical, gbd):
-    st.markdown("## PCOS in the MENA Region — Overview")
-    st.markdown("*Polycystic Ovary Syndrome (PCOS) is the most common endocrine disorder in women of reproductive age. This dashboard integrates clinical patient data with official IHME Global Burden of Disease 2023 statistics.*")
+# ─── MAIN ──────────────────────────────────────────────────────────────────────
+def main():
+    if not check_password():
+        return
 
-    # KPI from real GBD data
-    prev_2023 = gbd[(gbd['measure_name']=='Prevalence') & (gbd['metric_name']=='Rate') & (gbd['year']==2023)]
-    prev_1990 = gbd[(gbd['measure_name']=='Prevalence') & (gbd['metric_name']=='Rate') & (gbd['year']==1990)]
-    avg_prev_2023 = prev_2023['val'].mean()
-    avg_prev_1990 = prev_1990['val'].mean()
-    pct_change = ((avg_prev_2023 - avg_prev_1990) / avg_prev_1990) * 100
-    highest = prev_2023.loc[prev_2023['val'].idxmax(), 'location_name']
-    highest_val = prev_2023['val'].max()
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">{avg_prev_2023:,.0f}</div>
-            <div class="metric-label">Avg Prevalence Rate</div>
-            <div class="metric-sub">Per 100,000 women (2023)</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">+{pct_change:.1f}%</div>
-            <div class="metric-label">Rise Since 1990</div>
-            <div class="metric-sub">IHME GBD 2023</div>
-        </div>""", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">{highest}</div>
-            <div class="metric-label">Highest Burden Country</div>
-            <div class="metric-sub">{highest_val:,.0f} per 100,000</div>
-        </div>""", unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">70%</div>
-            <div class="metric-label">Remain Undiagnosed</div>
-            <div class="metric-sub">WHO Estimate</div>
-        </div>""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown('<div class="section-header">PCOS Prevalence Rate by Country (2023)</div>', unsafe_allow_html=True)
-        sorted_prev = prev_2023[prev_2023['location_name'].isin(MENA_COUNTRIES)].sort_values('val', ascending=True)
-        fig = px.bar(sorted_prev, x='val', y='location_name', orientation='h',
-                     color='val', color_continuous_scale=['#b48ec9','#6b2d8b'],
-                     labels={'val':'Prevalence Rate per 100,000','location_name':'Country'})
-        fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                          font=dict(family='Inter'), showlegend=False,
-                          coloraxis_showscale=False, margin=dict(t=10,b=10))
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.markdown('<div class="section-header">PCOS Burden: DALYs vs Prevalence (2023)</div>', unsafe_allow_html=True)
-        dalys_2023 = gbd[(gbd['measure_name']=='DALYs (Disability-Adjusted Life Years)') &
-                         (gbd['metric_name']=='Rate') & (gbd['year']==2023)]
-        merged = prev_2023.merge(dalys_2023[['location_name','val']], on='location_name', suffixes=('_prev','_dalys'))
-        fig2 = px.scatter(merged, x='val_prev', y='val_dalys', text='location_name',
-                          color='val_prev', color_continuous_scale=['#b48ec9','#6b2d8b'],
-                          labels={'val_prev':'Prevalence Rate','val_dalys':'DALYs Rate'},
-                          size='val_prev', size_max=30)
-        fig2.update_traces(textposition='top center', textfont_size=9)
-        fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), showlegend=False,
-                           coloraxis_showscale=False, margin=dict(t=10))
-        st.plotly_chart(fig2, use_container_width=True)
-
-    # Clinical dataset summary
-    st.markdown("---")
-    st.markdown('<div class="section-header"> Clinical Dataset Summary (541 Patients)</div>', unsafe_allow_html=True)
-    c1, c2, c3, c4 = st.columns(4)
-    pcos_pct = round(clinical['PCOS'].mean()*100,1)
-    with c1:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">541</div>
-            <div class="metric-label">Total Patients</div>
-            <div class="metric-sub">Clinical Records</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">{pcos_pct}%</div>
-            <div class="metric-label">PCOS Positive</div>
-            <div class="metric-sub">177 patients</div>
-        </div>""", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">{round(clinical[clinical['PCOS']==1]['Age'].mean(),1)}</div>
-            <div class="metric-label">Avg Age (PCOS+)</div>
-            <div class="metric-sub">Years</div>
-        </div>""", unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"""<div class="metric-card">
-            <div class="metric-value">{round(clinical[clinical['PCOS']==1]['BMI'].mean(),1)}</div>
-            <div class="metric-label">Avg BMI (PCOS+)</div>
-            <div class="metric-sub">kg/m²</div>
-        </div>""", unsafe_allow_html=True)
-
-    st.markdown("""<div class="info-box">
-         <b>Data Sources:</b> This dashboard integrates three official datasets:
-        (1) <b>IHME Global Burden of Disease 2023</b> — prevalence, incidence and DALYs for 21 MENA countries from 1990–2023;
-        (2) <b>WHO Global Health Observatory</b> via Our World in Data — female obesity rates by country 1980–2024;
-        (3) <b>Clinical PCOS Dataset</b> (Kaggle/UCI) — 541 patients with 44 clinical variables for patient-level analysis.
-    </div>""", unsafe_allow_html=True)
-
-# ─── PAGE 2: MENA MAP ──────────────────────────────────────────────────────────
-def page_map(gbd):
-    st.markdown("## PCOS Burden Map — MENA Region")
-    st.markdown("*Real IHME Global Burden of Disease 2023 data. Select measure, metric and year.*")
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        measure = st.selectbox("Measure", ['Prevalence','Incidence','DALYs (Disability-Adjusted Life Years)'],
-                               format_func=lambda x: x.split('(')[0].strip())
-    with col2:
-        metric = st.selectbox("Metric", ['Rate','Number','Percent'])
-    with col3:
-        year = st.slider("Year", 1990, 2023, 2023)
-
-    filtered = gbd[(gbd['measure_name']==measure) & (gbd['metric_name']==metric) & (gbd['year']==year)]
-    filtered = filtered.copy()
-    filtered['ISO'] = filtered['location_name'].map(ISO_MAP)
-
-    label = f"{measure.split('(')[0].strip()} ({metric})"
-
-    fig = px.choropleth(filtered, locations='ISO', color='val',
-                        hover_name='location_name',
-                        hover_data={'val':':.2f','ISO':False},
-                        color_continuous_scale=['#f3e8ff','#9b59b6','#4a1a6e'],
-                        title=f'PCOS {label} — MENA Region ({year})',
-                        labels={'val': label})
-    fig.update_geos(scope='world', center=dict(lat=26, lon=45),
-                    projection_scale=3.5, showland=True, landcolor='#f9f9f9',
-                    showocean=True, oceancolor='#e8f4fd', showframe=False)
-    fig.update_layout(height=500, paper_bgcolor='white', font=dict(family='Inter'),
-                      margin=dict(t=50,b=10,l=10,r=10))
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown('<div class="section-header"> Country Data Table</div>', unsafe_allow_html=True)
-    table = filtered[['location_name','val','upper','lower']].sort_values('val', ascending=False).copy()
-    table.columns = ['Country', f'{label}', 'Upper (95% UI)', 'Lower (95% UI)']
-    table = table.reset_index(drop=True)
-    table[f'{label}'] = table[f'{label}'].round(2)
-    table['Upper (95% UI)'] = table['Upper (95% UI)'].round(2)
-    table['Lower (95% UI)'] = table['Lower (95% UI)'].round(2)
-    st.dataframe(table, use_container_width=True, hide_index=True)
-
-    st.markdown("""<div class="warning-box">
-         <b>Source:</b> Institute for Health Metrics and Evaluation (IHME). GBD Results. Seattle, WA: IHME, University of Washington, 2025.
-        Available from vizhub.healthdata.org/gbd-results/. Values shown with 95% Uncertainty Intervals.
-    </div>""", unsafe_allow_html=True)
-
-# ─── PAGE 3: TRENDS ────────────────────────────────────────────────────────────
-def page_trends(gbd):
-    st.markdown("## PCOS Burden Trends 1990–2023")
-    st.markdown("*Track how PCOS burden has evolved across MENA countries over 34 years using official IHME data.*")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        measure = st.selectbox("Measure", ['Prevalence','Incidence','DALYs (Disability-Adjusted Life Years)'],
-                               format_func=lambda x: x.split('(')[0].strip(), key='trend_measure')
-    with col2:
-        countries = st.multiselect("Select Countries", MENA_COUNTRIES,
-                                    default=['Qatar','Kuwait','Saudi Arabia','Egypt','Lebanon','Yemen'])
-
-    filtered = gbd[(gbd['measure_name']==measure) &
-                   (gbd['metric_name']=='Rate') &
-                   (gbd['location_name'].isin(countries))].sort_values(['location_name','year'])
-
-    fig = px.line(filtered, x='year', y='val', color='location_name',
-                  markers=False,
-                  labels={'val':f'{measure.split("(")[0].strip()} Rate per 100,000','year':'Year','location_name':'Country'},
-                  title=f'PCOS {measure.split("(")[0].strip()} Rate Trends 1990–2023')
-    fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                      font=dict(family='Inter'), legend_title='Country',
-                      margin=dict(t=50), height=450)
-    fig.update_xaxes(showgrid=True, gridcolor='#f0f0f0')
-    fig.update_yaxes(showgrid=True, gridcolor='#f0f0f0')
-    st.plotly_chart(fig, use_container_width=True)
-
-    # % change table
-    st.markdown("---")
-    st.markdown('<div class="section-header"> Total Change 1990–2023 by Country</div>', unsafe_allow_html=True)
-    all_rate = gbd[(gbd['measure_name']==measure) & (gbd['metric_name']=='Rate')]
-    y1990 = all_rate[all_rate['year']==1990][['location_name','val']].rename(columns={'val':'val_1990'})
-    y2023 = all_rate[all_rate['year']==2023][['location_name','val']].rename(columns={'val':'val_2023'})
-    change = y1990.merge(y2023, on='location_name')
-    change['Change (%)'] = ((change['val_2023'] - change['val_1990']) / change['val_1990'] * 100).round(1)
-    change = change.sort_values('Change (%)', ascending=False)
-    change.columns = ['Country', '1990 Rate', '2023 Rate', 'Change (%)']
-
-    fig2 = px.bar(change, x='Change (%)', y='Country', orientation='h',
-                  color='Change (%)', color_continuous_scale=['#b48ec9','#6b2d8b'],
-                  title=f'% Change in PCOS {measure.split("(")[0].strip()} Rate (1990–2023)')
-    fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                       font=dict(family='Inter'), showlegend=False,
-                       coloraxis_showscale=False, margin=dict(t=50), height=500,
-                       yaxis=dict(autorange='reversed'))
-    st.plotly_chart(fig2, use_container_width=True)
-
-    st.dataframe(change.reset_index(drop=True), use_container_width=True, hide_index=True)
-
-# ─── PAGE 4: OBESITY & PCOS ────────────────────────────────────────────────────
-def page_obesity(gbd, obesity):
-    st.markdown("## Obesity & PCOS — The MENA Connection")
-    st.markdown("*Obesity is a major risk factor for PCOS. This page cross-analyses WHO female obesity rates with IHME PCOS burden data across the MENA region.*")
-
-    year = st.slider("Select Year", 1990, 2022, 2022)
-
-    # Merge datasets
-    pcos_yr = gbd[(gbd['measure_name']=='Prevalence') &
-                  (gbd['metric_name']=='Rate') &
-                  (gbd['year']==year)][['location_name','val']].rename(columns={'val':'PCOS_Rate'})
-
-    obs_yr = obesity[obesity['Year']==year][['Entity','Obesity_Pct']].rename(columns={'Entity':'location_name'})
-    obs_yr['location_name'] = obs_yr['location_name'].replace({
-        'Iran':'Iran','Syria':'Syria','Turkey':'Turkey'
-    })
-
-    merged = pcos_yr.merge(obs_yr, on='location_name').dropna()
-    correlation = merged['PCOS_Rate'].corr(merged['Obesity_Pct'])
-
-    st.markdown(f"""<div class="metric-card" style="max-width:320px;">
-        <div class="metric-value">{correlation:.2f}</div>
-        <div class="metric-label">Correlation Coefficient</div>
-        <div class="metric-sub">PCOS Rate vs Female Obesity ({year})</div>
-    </div>""", unsafe_allow_html=True)
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="section-header">PCOS Prevalence vs Female Obesity Rate</div>', unsafe_allow_html=True)
-        fig = px.scatter(merged, x='Obesity_Pct', y='PCOS_Rate',
-                         text='location_name', size='PCOS_Rate',
-                         color='PCOS_Rate', color_continuous_scale=['#b48ec9','#6b2d8b'],
-                         labels={'Obesity_Pct':'Female Obesity Rate (%)','PCOS_Rate':'PCOS Prevalence Rate per 100,000'})
-        fig.update_traces(textposition='top center', textfont_size=9)
-        fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                          font=dict(family='Inter'), showlegend=False,
-                          coloraxis_showscale=False, margin=dict(t=10), height=420)
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.markdown('<div class="section-header">Dual Ranking: Obesity vs PCOS Burden</div>', unsafe_allow_html=True)
-        merged_sorted = merged.sort_values('Obesity_Pct', ascending=False)
-        fig2 = go.Figure()
-        fig2.add_trace(go.Bar(name='Female Obesity (%)', x=merged_sorted['location_name'],
-                              y=merged_sorted['Obesity_Pct'], marker_color='#9b59b6', opacity=0.8))
-        fig2.add_trace(go.Scatter(name='PCOS Rate (per 100k)', x=merged_sorted['location_name'],
-                                  y=merged_sorted['PCOS_Rate']/100, mode='lines+markers',
-                                  line=dict(color='#e74c3c', width=2),
-                                  yaxis='y2'))
-        fig2.update_layout(
-            paper_bgcolor='white', plot_bgcolor='white', font=dict(family='Inter'),
-            yaxis=dict(title='Female Obesity (%)'),
-            yaxis2=dict(title='PCOS Rate / 100 (per 100k)', overlaying='y', side='right'),
-            legend=dict(orientation='h', y=1.1),
-            xaxis_tickangle=-45, margin=dict(t=20,b=80), height=420
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-
-    # Trend comparison
-    st.markdown("---")
-    st.markdown('<div class="section-header"> Obesity & PCOS Trends Over Time</div>', unsafe_allow_html=True)
-    country = st.selectbox("Select Country", sorted(merged['location_name'].tolist()), index=0)
-
-    pcos_trend = gbd[(gbd['measure_name']=='Prevalence') &
-                     (gbd['metric_name']=='Rate') &
-                     (gbd['location_name']==country)][['year','val']].rename(columns={'val':'PCOS_Rate'})
-    obs_trend = obesity[obesity['Entity']==country][['Year','Obesity_Pct']].rename(columns={'Year':'year'})
-    trend = pcos_trend.merge(obs_trend, on='year').dropna().sort_values('year')
-
-    fig3 = go.Figure()
-    fig3.add_trace(go.Scatter(x=trend['year'], y=trend['PCOS_Rate'], name='PCOS Prevalence Rate',
-                              line=dict(color='#9b59b6', width=2), mode='lines'))
-    fig3.add_trace(go.Scatter(x=trend['year'], y=trend['Obesity_Pct']*30, name='Female Obesity (scaled)',
-                              line=dict(color='#e74c3c', width=2, dash='dash'), mode='lines'))
-    fig3.update_layout(
-        paper_bgcolor='white', plot_bgcolor='white', font=dict(family='Inter'),
-        title=f'PCOS Prevalence vs Female Obesity Over Time — {country}',
-        xaxis_title='Year', yaxis_title='Rate',
-        legend=dict(orientation='h', y=1.1),
-        margin=dict(t=60), height=380
-    )
-    st.plotly_chart(fig3, use_container_width=True)
-
-    st.markdown(f"""<div class="info-box">
-         <b>Key Insight:</b> A moderate-to-strong positive correlation (r = {correlation:.2f}) exists between 
-        female obesity rates and PCOS prevalence across the MENA region in {year}. GCC countries such as Qatar, 
-        Kuwait, and Saudi Arabia show both elevated obesity and high PCOS burden, consistent with obesity's role 
-        as a major modifiable risk factor. Egypt is a notable outlier — highest female obesity (55.9%) but 
-        comparatively moderate PCOS prevalence — suggesting other factors (diagnostic access, genetics, 
-        healthcare infrastructure) also shape regional variation.
-        <br><br>
-        <b>Sources:</b> IHME GBD 2023; WHO Global Health Observatory via Our World in Data (NCD-RisC, Lancet 2024).
-    </div>""", unsafe_allow_html=True)
-
-# ─── PAGE 5: PATIENT PROFILES ──────────────────────────────────────────────────
-def page_patients(clinical):
-    st.markdown("## Patient Profiles")
-    st.markdown("*Clinical-level analysis of 541 patients. Explore how physical characteristics differ between PCOS positive and negative patients.*")
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        age_range = st.slider("Age Range", int(clinical['Age'].min()), int(clinical['Age'].max()), (20, 48))
-    with col2:
-        bmi_filter = st.multiselect("BMI Category", ['Underweight','Normal','Overweight','Obese'],
-                                     default=['Underweight','Normal','Overweight','Obese'])
-    with col3:
-        pcos_filter = st.multiselect("PCOS Status", ['PCOS Positive','PCOS Negative'],
-                                      default=['PCOS Positive','PCOS Negative'])
-
-    df = clinical[
-        (clinical['Age'] >= age_range[0]) & (clinical['Age'] <= age_range[1]) &
-        (clinical['BMI_Category'].isin(bmi_filter)) &
-        (clinical['PCOS_Label'].isin(pcos_filter))
-    ]
-    st.markdown(f"**Showing {len(df)} patients**")
-    st.markdown("---")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        fig = px.histogram(df, x='BMI', color='PCOS_Label', nbins=30,
-                           color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                           barmode='overlay', opacity=0.75, title='BMI Distribution by PCOS Status')
-        fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                          font=dict(family='Inter'), legend_title='', margin=dict(t=50))
-        st.plotly_chart(fig, use_container_width=True)
-    with c2:
-        fig2 = px.box(df, x='PCOS_Label', y='WaistHip', color='PCOS_Label',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                      points='all', title='Waist:Hip Ratio by PCOS Status')
-        fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), showlegend=False, margin=dict(t=50))
-        st.plotly_chart(fig2, use_container_width=True)
-
-    c3, c4 = st.columns(2)
-    with c3:
-        fig3 = px.scatter(df, x='Age', y='BMI', color='PCOS_Label',
-                          color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#c8a8e0'},
-                          opacity=0.7, title='Age vs BMI')
-        fig3.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), legend_title='', margin=dict(t=50))
-        st.plotly_chart(fig3, use_container_width=True)
-    with c4:
-        bmi_group = df.groupby(['BMI_Category','PCOS_Label']).size().reset_index(name='Count')
-        fig4 = px.bar(bmi_group, x='BMI_Category', y='Count', color='PCOS_Label',
-                      barmode='group',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                      title='BMI Category vs PCOS Status')
-        fig4.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), legend_title='', margin=dict(t=50))
-        st.plotly_chart(fig4, use_container_width=True)
-
-    # Lifestyle
-    st.markdown("---")
-    st.markdown('<div class="section-header"> Lifestyle Factors</div>', unsafe_allow_html=True)
-    lc1, lc2 = st.columns(2)
-    with lc1:
-        lifestyle = df.groupby('PCOS_Label')[['FastFood','Exercise']].mean().reset_index()
-        lm = lifestyle.melt(id_vars='PCOS_Label', value_vars=['FastFood','Exercise'],
-                            var_name='Factor', value_name='Proportion')
-        lm['Factor'] = lm['Factor'].map({'FastFood':'Fast Food','Exercise':'Regular Exercise'})
-        fig5 = px.bar(lm, x='Factor', y='Proportion', color='PCOS_Label', barmode='group',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'})
-        fig5.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), legend_title='', margin=dict(t=20))
-        st.plotly_chart(fig5, use_container_width=True)
-    with lc2:
-        preg = df.groupby(['PCOS_Label','Pregnant']).size().reset_index(name='Count')
-        preg['Pregnant'] = preg['Pregnant'].map({1:'Pregnant',0:'Not Pregnant'})
-        fig6 = px.bar(preg, x='PCOS_Label', y='Count', color='Pregnant', barmode='stack',
-                      color_discrete_sequence=['#9b59b6','#b48ec9'])
-        fig6.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), xaxis_title='', margin=dict(t=20))
-        st.plotly_chart(fig6, use_container_width=True)
-
-# ─── PAGE 6: HORMONAL ANALYSIS ─────────────────────────────────────────────────
-def page_hormones(clinical):
-    st.markdown("## Hormonal Analysis")
-    st.markdown("*Hormonal imbalances are the key diagnostic markers of PCOS.*")
-
-    # 1. Summary statistics table
-    hormone_cols = ['FSH','LH','FSH_LH','AMH','TSH','PRL','VitD3']
-    stats = clinical.groupby('PCOS_Label')[hormone_cols].mean().round(2).T
-    st.markdown('<div class="section-header">Hormone Summary Statistics</div>', unsafe_allow_html=True)
-    st.dataframe(stats.style.highlight_max(axis=1, color='#b48ec9'), use_container_width=True)
-
-    # 2. Correlation heatmap
-    st.markdown("---")
-    corr_cols = ['FSH','LH','AMH','TSH','PRL','VitD3','BMI','PCOS']
-    corr = clinical[corr_cols].dropna().corr().round(2)
-    fig3 = px.imshow(corr, text_auto=True, aspect='auto',
-                     color_continuous_scale=['#4a1a6e','white','#9b59b6'],
-                     title='Correlation Matrix: Hormones & PCOS')
-    fig3.update_layout(paper_bgcolor='white', font=dict(family='Inter'),
-                       margin=dict(t=50), height=450)
-    st.plotly_chart(fig3, use_container_width=True)
-
-    # 3. Distribution charts (interactive hormone selector)
-    st.markdown("---")
-    st.markdown('<div class="section-header">Hormone Distribution Explorer</div>', unsafe_allow_html=True)
-    hormones = {'FSH':'FSH (mIU/mL)','LH':'LH (mIU/mL)','AMH':'AMH (ng/mL)',
-                'TSH':'TSH (mIU/L)','PRL':'Prolactin (ng/mL)','VitD3':'Vitamin D3 (ng/mL)'}
-    selected = st.selectbox("Select Hormone", list(hormones.keys()), format_func=lambda x: hormones[x])
-
-    c1, c2 = st.columns(2)
-    with c1:
-        fig = px.violin(clinical, x='PCOS_Label', y=selected, color='PCOS_Label', box=True,
-                        color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                        title=f'{hormones[selected]} Distribution')
-        fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                          font=dict(family='Inter'), showlegend=False, margin=dict(t=50))
-        st.plotly_chart(fig, use_container_width=True)
-    with c2:
-        fig2 = px.histogram(clinical, x=selected, color='PCOS_Label', nbins=40,
-                            barmode='overlay', opacity=0.75,
-                            color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                            title=f'{hormones[selected]} Frequency Distribution')
-        fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), legend_title='', margin=dict(t=50))
-        st.plotly_chart(fig2, use_container_width=True)
-
-# ─── PAGE 7: SYMPTOMS ──────────────────────────────────────────────────────────
-def page_symptoms(clinical):
-    st.markdown("## Symptom Explorer")
-    st.markdown("*Analyze clinical symptoms across PCOS positive and negative patients.*")
-
-    symptoms = {'WeightGain':'Weight Gain','HairGrowth':'Excessive Hair Growth',
-                'SkinDarkening':'Skin Darkening','HairLoss':'Hair Loss','Pimples':'Pimples/Acne'}
-
-    sym_data = []
-    for col, label in symptoms.items():
-        for status in [0,1]:
-            subset = clinical[clinical['PCOS']==status]
-            pct = subset[col].mean()*100
-            sym_data.append({'Symptom':label,'PCOS Status':'PCOS Positive' if status==1 else 'PCOS Negative','Prevalence (%)':round(pct,1)})
-    sym_df = pd.DataFrame(sym_data)
-
-    fig = px.bar(sym_df, x='Symptom', y='Prevalence (%)', color='PCOS Status', barmode='group',
-                 color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
-                 text='Prevalence (%)', title='Symptom Prevalence: PCOS Positive vs Negative')
-    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-    fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                      font=dict(family='Inter'), legend_title='',
-                      legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-                      title=dict(y=0.97, yanchor='top'),
-                      height=460, margin=dict(t=90))
-    st.plotly_chart(fig, use_container_width=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        cats = list(symptoms.values())
-        pos_vals = [clinical[clinical['PCOS']==1][c].mean()*100 for c in symptoms.keys()]
-        neg_vals = [clinical[clinical['PCOS']==0][c].mean()*100 for c in symptoms.keys()]
-        fig2 = go.Figure()
-        fig2.add_trace(go.Scatterpolar(r=pos_vals+[pos_vals[0]], theta=cats+[cats[0]],
-                                        fill='toself', name='PCOS Positive',
-                                        line_color='#9b59b6', fillcolor='rgba(155,89,182,0.2)'))
-        fig2.add_trace(go.Scatterpolar(r=neg_vals+[neg_vals[0]], theta=cats+[cats[0]],
-                                        fill='toself', name='PCOS Negative',
-                                        line_color='#b48ec9', fillcolor='rgba(232,213,245,0.3)'))
-        fig2.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,100])),
-                           paper_bgcolor='white', font=dict(family='Inter'),
-                           legend=dict(orientation='h', y=-0.1), height=380, margin=dict(t=20))
-        st.plotly_chart(fig2, use_container_width=True)
-    with c2:
-        cycle = clinical.groupby(['PCOS_Label','Cycle']).size().reset_index(name='Count')
-        cycle['Cycle'] = cycle['Cycle'].map({2:'Regular',4:'Irregular'})
-        fig3 = px.bar(cycle, x='PCOS_Label', y='Count', color='Cycle', barmode='stack',
-                      color_discrete_sequence=['#9b59b6','#b48ec9'],
-                      title='Menstrual Cycle Regularity by PCOS Status')
-        fig3.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), xaxis_title='', margin=dict(t=50))
-        st.plotly_chart(fig3, use_container_width=True)
-
-# ─── PAGE 8: ML PREDICTOR ──────────────────────────────────────────────────────
-def page_predictor(clinical):
-    st.markdown("## PCOS Risk Predictor")
-    st.markdown("*Random Forest model trained on 541 clinical patients. Enter values to predict PCOS likelihood.*")
-
-    @st.cache_resource
-    def train_model(df):
-        features = ['Age','BMI','FSH','LH','AMH','TSH','PRL','VitD3',
-                    'WaistHip','WeightGain','HairGrowth','SkinDarkening',
-                    'HairLoss','Pimples','FastFood','Exercise','FollicleL','FollicleR']
-        mdf = df[features+['PCOS']].dropna()
-        X, y = mdf[features], mdf['PCOS']
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X_train, y_train)
-        acc = accuracy_score(y_test, model.predict(X_test))
-        return model, acc, features
-
+    clinical = load_clinical()
+    gbd = load_gbd()
+    obesity = load_obesity()
     model, acc, features = train_model(clinical)
 
-    # Population averages used as hidden defaults in Quick Mode
+    st.markdown("# PCOS Analytics \u2014 MENA Region")
+    st.markdown("*A single coordinated view of PCOS burden, regional risk factors, and patient-level clinical patterns. Adjust the filters below \u2014 every chart updates together.*")
+
+    # ── GLOBAL FILTER BAR (coordinates the regional charts) ──────────────────
+    st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
+    fc1, fc2, fc3 = st.columns([1, 1.3, 1.3])
+    with fc1:
+        sel_year = st.slider("Year", 1990, 2023, 2023)
+    with fc2:
+        sel_measure = st.selectbox("Regional Measure", ['Prevalence', 'Incidence', 'DALYs (Disability-Adjusted Life Years)'],
+                                    format_func=lambda x: x.split('(')[0].strip())
+    with fc3:
+        sel_countries = st.multiselect("Highlight Countries (trend + map hover)", MENA_COUNTRIES,
+                                        default=['Qatar', 'Kuwait', 'Saudi Arabia', 'Egypt', 'Lebanon', 'Yemen'])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── ROW 1: KPI STRIP ──────────────────────────────────────────────────────
+    prev_sel = gbd[(gbd['measure_name']==sel_measure) & (gbd['metric_name']=='Rate') & (gbd['year']==sel_year)]
+    prev_1990 = gbd[(gbd['measure_name']==sel_measure) & (gbd['metric_name']=='Rate') & (gbd['year']==1990)]
+    avg_sel = prev_sel['val'].mean()
+    avg_1990 = prev_1990['val'].mean()
+    pct_change = ((avg_sel - avg_1990) / avg_1990) * 100 if avg_1990 else 0
+    highest = prev_sel.loc[prev_sel['val'].idxmax(), 'location_name'] if len(prev_sel) else "\u2014"
+    pcos_pct = round(clinical['PCOS'].mean()*100, 1)
+
+    k1, k2, k3, k4, k5 = st.columns(5)
+    label_short = sel_measure.split('(')[0].strip()
+    with k1:
+        st.markdown(f"""<div class="metric-card"><div class="metric-value">{avg_sel:,.0f}</div>
+            <div class="metric-label">Avg {label_short} Rate</div><div class="metric-sub">per 100,000 women, {sel_year}</div></div>""", unsafe_allow_html=True)
+    with k2:
+        st.markdown(f"""<div class="metric-card"><div class="metric-value">{pct_change:+.0f}%</div>
+            <div class="metric-label">Change vs 1990</div><div class="metric-sub">IHME GBD 2023</div></div>""", unsafe_allow_html=True)
+    with k3:
+        st.markdown(f"""<div class="metric-card"><div class="metric-value">{highest}</div>
+            <div class="metric-label">Highest Burden</div><div class="metric-sub">{sel_year}</div></div>""", unsafe_allow_html=True)
+    with k4:
+        st.markdown(f"""<div class="metric-card"><div class="metric-value">{pcos_pct}%</div>
+            <div class="metric-label">Clinical PCOS Rate</div><div class="metric-sub">541 patients</div></div>""", unsafe_allow_html=True)
+    with k5:
+        st.markdown(f"""<div class="metric-card"><div class="metric-value">{acc*100:.0f}%</div>
+            <div class="metric-label">Predictor Accuracy</div><div class="metric-sub">Random Forest, 18 features</div></div>""", unsafe_allow_html=True)
+
+    # ── ROW 2: MAP + TREND (both driven by global filters) ────────────────────
+    st.markdown('<div class="section-header">Regional Burden \u2014 Map & Trend (coordinated by year/measure above)</div>', unsafe_allow_html=True)
+    r2c1, r2c2 = st.columns([1.1, 1])
+    with r2c1:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        map_df = prev_sel.copy()
+        map_df['ISO'] = map_df['location_name'].map(ISO_MAP)
+        fig_map = px.choropleth(map_df, locations='ISO', color='val',
+                                hover_name='location_name', hover_data={'val':':.0f','ISO':False},
+                                color_continuous_scale=['#f3e8ff','#9b59b6','#4a1a6e'],
+                                labels={'val': f'{label_short} Rate'})
+        fig_map.update_geos(scope='world', center=dict(lat=26, lon=45), projection_scale=3.3,
+                            showland=True, landcolor='#f9f9f9', showocean=True, oceancolor='#e8f4fd', showframe=False)
+        fig_map.update_layout(height=380, paper_bgcolor='white', font=dict(family='Inter'),
+                              margin=dict(t=10,b=10,l=10,r=10), coloraxis_colorbar=dict(title=label_short))
+        st.plotly_chart(fig_map, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with r2c2:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        trend_df = gbd[(gbd['measure_name']==sel_measure) & (gbd['metric_name']=='Rate') &
+                       (gbd['location_name'].isin(sel_countries))].sort_values(['location_name','year'])
+        fig_trend = px.line(trend_df, x='year', y='val', color='location_name',
+                            labels={'val': f'{label_short} Rate', 'year':'Year', 'location_name':'Country'})
+        fig_trend.add_vline(x=sel_year, line_dash='dash', line_color='#b48ec9')
+        fig_trend.update_layout(height=380, paper_bgcolor='white', plot_bgcolor='white',
+                                font=dict(family='Inter'), legend_title='', margin=dict(t=10,b=10,l=10,r=10))
+        st.plotly_chart(fig_trend, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── ROW 3: OBESITY LINK (uses sel_year too) ────────────────────────────────
+    st.markdown('<div class="section-header">Obesity & PCOS Link \u2014 same year as above</div>', unsafe_allow_html=True)
+    obesity_year = min(sel_year, 2022)
+    pcos_yr = gbd[(gbd['measure_name']=='Prevalence') & (gbd['metric_name']=='Rate') & (gbd['year']==obesity_year)][['location_name','val']].rename(columns={'val':'PCOS_Rate'})
+    obs_yr = obesity[obesity['Year']==obesity_year][['Entity','Obesity_Pct']].rename(columns={'Entity':'location_name'})
+    merged = pcos_yr.merge(obs_yr, on='location_name').dropna()
+    correlation = merged['PCOS_Rate'].corr(merged['Obesity_Pct']) if len(merged) > 2 else float('nan')
+
+    r3c1, r3c2 = st.columns([1, 1])
+    with r3c1:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        fig_sc = px.scatter(merged, x='Obesity_Pct', y='PCOS_Rate', text='location_name', size='PCOS_Rate',
+                            color='PCOS_Rate', color_continuous_scale=['#b48ec9','#6b2d8b'],
+                            labels={'Obesity_Pct':'Female Obesity Rate (%)','PCOS_Rate':'PCOS Prevalence Rate'})
+        fig_sc.update_traces(textposition='top center', textfont_size=8)
+        fig_sc.update_layout(height=330, paper_bgcolor='white', plot_bgcolor='white', font=dict(family='Inter'),
+                             showlegend=False, coloraxis_showscale=False, margin=dict(t=10,b=10,l=10,r=10))
+        st.plotly_chart(fig_sc, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    with r3c2:
+        st.markdown(f"""<div class="info-box" style="height:330px; display:flex; flex-direction:column; justify-content:center;">
+            <div style="font-size:2.2rem; font-weight:700; color:#6b2d8b;">r = {correlation:.2f}</div>
+            <div style="font-weight:600; margin-top:4px;">Correlation: PCOS Rate vs Female Obesity ({obesity_year})</div>
+            <div style="margin-top:10px;">A moderate-to-strong positive correlation links female obesity and PCOS prevalence across MENA \u2014
+            GCC countries show both elevated obesity and high PCOS burden. Egypt is a notable outlier: highest female
+            obesity (55.9%) yet only moderate PCOS prevalence, suggesting diagnostic access and genetics also matter.</div>
+        </div>""", unsafe_allow_html=True)
+
+    # ── ROW 4: PATIENT PROFILE (BMI / Symptoms) coordinated by a local PCOS filter ──
+    st.markdown('<div class="section-header">Patient-Level Clinical Profile (541 patients)</div>', unsafe_allow_html=True)
+    r4c1, r4c2, r4c3 = st.columns(3)
+    with r4c1:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        st.markdown("**BMI Distribution by PCOS Status**")
+        fig_bmi = px.histogram(clinical, x='BMI', color='PCOS_Label', nbins=25, barmode='overlay', opacity=0.75,
+                               color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'})
+        fig_bmi.update_layout(height=290, paper_bgcolor='white', plot_bgcolor='white', font=dict(family='Inter'),
+                              legend_title='', legend=dict(orientation='h', y=1.15), margin=dict(t=10,b=10,l=10,r=10))
+        st.plotly_chart(fig_bmi, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    with r4c2:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        st.markdown("**Symptom Prevalence: PCOS+ vs PCOS\u2212**")
+        symptoms = {'WeightGain':'Weight Gain','HairGrowth':'Hair Growth','SkinDarkening':'Skin Darkening',
+                    'HairLoss':'Hair Loss','Pimples':'Acne'}
+        sym_data = []
+        for col, label in symptoms.items():
+            for status in [0,1]:
+                pct = clinical[clinical['PCOS']==status][col].mean()*100
+                sym_data.append({'Symptom':label,'Status':'PCOS+' if status==1 else 'PCOS-','Prevalence (%)':round(pct,1)})
+        sym_df = pd.DataFrame(sym_data)
+        fig_sym = px.bar(sym_df, x='Symptom', y='Prevalence (%)', color='Status', barmode='group',
+                         color_discrete_map={'PCOS+':'#9b59b6','PCOS-':'#b48ec9'})
+        fig_sym.update_layout(height=290, paper_bgcolor='white', plot_bgcolor='white', font=dict(family='Inter'),
+                              legend_title='', legend=dict(orientation='h', y=1.15), margin=dict(t=10,b=10,l=10,r=10))
+        st.plotly_chart(fig_sym, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    with r4c3:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        st.markdown("**Hormone Correlation Matrix**")
+        corr_cols = ['FSH','LH','AMH','TSH','PRL','VitD3','BMI','PCOS']
+        corr = clinical[corr_cols].dropna().corr().round(2)
+        fig_corr = px.imshow(corr, text_auto=True, aspect='auto',
+                             color_continuous_scale=['#4a1a6e','white','#9b59b6'])
+        fig_corr.update_layout(height=290, paper_bgcolor='white', font=dict(family='Inter', size=9),
+                               margin=dict(t=10,b=10,l=10,r=10), coloraxis_showscale=False)
+        st.plotly_chart(fig_corr, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── ROW 5: PREDICTOR ────────────────────────────────────────────────────────
+    st.markdown('<div class="section-header">PCOS Risk Predictor (Quick Mode)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
     defaults = clinical[features].median(numeric_only=True)
 
-    st.markdown(f"""<div class="info-box">
-         <b>Model:</b> Random Forest Classifier &nbsp;|&nbsp;
-         <b>Accuracy:</b> {acc*100:.1f}% &nbsp;|&nbsp;
-         <b>Training Data:</b> 541 patients, 18 features
-    </div>""", unsafe_allow_html=True)
+    p1, p2, p3, p4 = st.columns(4)
+    with p1:
+        age = st.number_input("Age", 18, 55, 28)
+        bmi = st.number_input("BMI", 15.0, 50.0, 24.0)
+    with p2:
+        weight_gain = st.selectbox("Weight Gain", [0,1], format_func=lambda x: "Yes" if x else "No")
+        hair_growth = st.selectbox("Hair Growth", [0,1], format_func=lambda x: "Yes" if x else "No")
+    with p3:
+        skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x else "No")
+        hair_loss = st.selectbox("Hair Loss", [0,1], format_func=lambda x: "Yes" if x else "No")
+    with p4:
+        pimples = st.selectbox("Acne", [0,1], format_func=lambda x: "Yes" if x else "No")
+        irregular = st.selectbox("Irregular Periods", [0,1], format_func=lambda x: "Yes" if x else "No")
 
-    mode = st.radio("Mode", ["Quick Mode (presentation-friendly)", "Full Clinical Mode"], horizontal=True)
+    fsh, lh, amh, tsh, prl, vitd3 = (defaults['FSH'], defaults['LH'], defaults['AMH'], defaults['TSH'], defaults['PRL'], defaults['VitD3'])
+    waisthip = defaults['WaistHip']
+    follicleL = defaults['FollicleL'] + (3 if irregular else 0)
+    follicleR = defaults['FollicleR'] + (3 if irregular else 0)
+    fastfood, exercise = int(defaults['FastFood']), int(defaults['Exercise'])
 
-    if mode == "Quick Mode (presentation-friendly)":
-        st.caption("Simplified inputs for a quick demo. Hormone and ultrasound values use typical clinical averages behind the scenes.")
-        c1, c2 = st.columns(2)
-        with c1:
-            age = st.number_input("Age (years)", 18, 55, 28)
-            bmi = st.number_input("BMI (kg/m²)", 15.0, 50.0, 24.0)
-            weight_gain = st.selectbox("Sudden Weight Gain", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            hair_growth = st.selectbox("Excessive Hair Growth", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-        with c2:
-            skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            hair_loss = st.selectbox("Hair Loss / Thinning", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            pimples = st.selectbox("Acne / Pimples", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            irregular_cycle = st.selectbox("Irregular Periods", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-
-        # Use population medians for the hidden clinical fields
-        fsh, lh, amh, tsh, prl, vitd3 = (defaults['FSH'], defaults['LH'], defaults['AMH'],
-                                          defaults['TSH'], defaults['PRL'], defaults['VitD3'])
-        waisthip = defaults['WaistHip']
-        # Irregular cycle is a strong PCOS marker — nudge follicle counts since they're not directly asked
-        follicleL = defaults['FollicleL'] + (3 if irregular_cycle else 0)
-        follicleR = defaults['FollicleR'] + (3 if irregular_cycle else 0)
-        fastfood, exercise = int(defaults['FastFood']), int(defaults['Exercise'])
-
-    else:
-        st.markdown("### Enter Patient Data")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            age = st.number_input("Age (years)", 18, 55, 28)
-            bmi = st.number_input("BMI (kg/m²)", 15.0, 50.0, 24.0)
-            fsh = st.number_input("FSH (mIU/mL)", 0.0, 30.0, 5.0)
-            lh = st.number_input("LH (mIU/mL)", 0.0, 30.0, 3.0)
-            amh = st.number_input("AMH (ng/mL)", 0.0, 20.0, 2.5)
-            tsh = st.number_input("TSH (mIU/L)", 0.0, 20.0, 2.0)
-        with c2:
-            prl = st.number_input("Prolactin (ng/mL)", 0.0, 100.0, 20.0)
-            vitd3 = st.number_input("Vitamin D3 (ng/mL)", 0.0, 100.0, 25.0)
-            waisthip = st.number_input("Waist:Hip Ratio", 0.5, 1.5, 0.85)
-            follicleL = st.number_input("Follicle Count (Left)", 0, 30, 5)
-            follicleR = st.number_input("Follicle Count (Right)", 0, 30, 5)
-        with c3:
-            st.markdown("**Symptoms**")
-            weight_gain = st.selectbox("Weight Gain", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            hair_growth = st.selectbox("Excessive Hair Growth", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            skin_dark = st.selectbox("Skin Darkening", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            hair_loss = st.selectbox("Hair Loss", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            pimples = st.selectbox("Pimples/Acne", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            fastfood = st.selectbox("Fast Food", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-            exercise = st.selectbox("Regular Exercise", [0,1], format_func=lambda x: "Yes" if x==1 else "No")
-
-    if st.button(" Predict PCOS Risk", use_container_width=True):
+    if st.button("Predict PCOS Risk", use_container_width=True):
         input_data = pd.DataFrame([[age,bmi,fsh,lh,amh,tsh,prl,vitd3,waisthip,
                                     weight_gain,hair_growth,skin_dark,hair_loss,
                                     pimples,fastfood,exercise,follicleL,follicleR]], columns=features)
         pred = model.predict(input_data)[0]
         prob = model.predict_proba(input_data)[0]
         risk_pct = prob[1]*100
+        rc1, rc2 = st.columns([1,2])
+        with rc1:
+            if pred==1:
+                st.error(f"**PCOS Likely** \u2014 Risk Score: **{risk_pct:.1f}%**")
+            else:
+                st.success(f"**PCOS Unlikely** \u2014 Risk Score: **{risk_pct:.1f}%**")
+        with rc2:
+            fig_gauge = go.Figure(go.Indicator(mode="gauge+number", value=risk_pct,
+                gauge={'axis':{'range':[0,100]},'bar':{'color':'#9b59b6'},
+                       'steps':[{'range':[0,33],'color':'#d5f5e3'},{'range':[33,66],'color':'#fdebd0'},{'range':[66,100],'color':'#f5b7b1'}]}))
+            fig_gauge.update_layout(height=180, paper_bgcolor='white', font=dict(family='Inter'), margin=dict(t=10,b=10,l=10,r=10))
+            st.plotly_chart(fig_gauge, use_container_width=True)
+        st.markdown("""<div class="warning-box">Disclaimer: this tool is for educational and research purposes only and is not a substitute for clinical diagnosis.</div>""", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        if pred==1:
-            st.error(f"**PCOS Likely** — Risk Score: **{risk_pct:.1f}%**")
-        else:
-            st.success(f"**PCOS Unlikely** — Risk Score: **{risk_pct:.1f}%**")
-
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number", value=risk_pct,
-            title={'text':"PCOS Risk Score (%)"},
-            gauge={'axis':{'range':[0,100]},'bar':{'color':'#9b59b6'},
-                   'steps':[{'range':[0,33],'color':'#d5f5e3'},
-                             {'range':[33,66],'color':'#fdebd0'},
-                             {'range':[66,100],'color':'#f5b7b1'}]}
-        ))
-        fig.update_layout(paper_bgcolor='white', font=dict(family='Inter'), height=300, margin=dict(t=50))
-        st.plotly_chart(fig, use_container_width=True)
-
-        importance = pd.DataFrame({'Feature':features,'Importance':model.feature_importances_}).sort_values('Importance', ascending=True).tail(10)
-        fig2 = px.bar(importance, x='Importance', y='Feature', orientation='h',
-                      color='Importance', color_continuous_scale=['#b48ec9','#6b2d8b'],
-                      title='Top 10 Most Predictive Features')
-        fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                           font=dict(family='Inter'), showlegend=False, margin=dict(t=50), height=350)
-        st.plotly_chart(fig2, use_container_width=True)
-
-        st.markdown("""<div class="warning-box">
-             <b>Disclaimer:</b> This tool is for educational and research purposes only and is not a substitute for clinical diagnosis.
-        </div>""", unsafe_allow_html=True)
-
-# ─── MAIN ──────────────────────────────────────────────────────────────────────
-def main():
-    if not check_password():
-        return
-    clinical = load_clinical()
-    gbd = load_gbd()
-    obesity = load_obesity()
-    page = render_sidebar()
-
-    if page == "Overview":
-        page_overview(clinical, gbd)
-    elif page == "MENA Burden Map":
-        page_map(gbd)
-    elif page == "Trends Over Time":
-        page_trends(gbd)
-    elif page == "Obesity & PCOS Link":
-        page_obesity(gbd, obesity)
-    elif page == "Patient Profiles":
-        page_patients(clinical)
-    elif page == "Hormonal Analysis":
-        page_hormones(clinical)
-    elif page == "Symptom Explorer":
-        page_symptoms(clinical)
-    elif page == "PCOS Predictor":
-        page_predictor(clinical)
+    # ── FOOTER: DATA SOURCES ────────────────────────────────────────────────────
+    st.markdown("""<div class="info-box">
+        <b>Data Sources:</b> IHME Global Burden of Disease 2023 (6,426 rows, 21 MENA countries, 1990\u20132023) \u00b7
+        WHO Global Health Observatory via Our World in Data (9,270 rows, female obesity 1980\u20132024) \u00b7
+        Clinical PCOS Dataset (541 patients, 44 variables).
+    </div>""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
