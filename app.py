@@ -39,7 +39,7 @@ st.markdown("""
     .metric-value { font-size: 2.2rem; font-weight: 700; color: #6b2d8b; line-height: 1; }
     .metric-label { font-size: 0.85rem; color: #888; margin-top: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
     .metric-sub { font-size: 0.8rem; color: #bbb; margin-top: 4px; }
-    .section-header { font-size: 1.4rem; font-weight: 700; color: #6b2d8b; margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #e8d5f5; }
+    .section-header { font-size: 1.4rem; font-weight: 700; color: #6b2d8b; margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #b48ec9; }
     .info-box { background: linear-gradient(135deg, #f3e8ff, #fdf2ff); border-radius: 12px; padding: 20px; border: 1px solid #e0c4f5; margin: 12px 0; }
     .warning-box { background: linear-gradient(135deg, #fff3cd, #fff8e1); border-radius: 12px; padding: 20px; border: 1px solid #ffd54f; margin: 12px 0; }
     #MainMenu {visibility: hidden;}
@@ -212,7 +212,7 @@ def page_overview(clinical, gbd):
         st.markdown('<div class="section-header">PCOS Prevalence Rate by Country (2023)</div>', unsafe_allow_html=True)
         sorted_prev = prev_2023[prev_2023['location_name'].isin(MENA_COUNTRIES)].sort_values('val', ascending=True)
         fig = px.bar(sorted_prev, x='val', y='location_name', orientation='h',
-                     color='val', color_continuous_scale=['#e8d5f5','#6b2d8b'],
+                     color='val', color_continuous_scale=['#b48ec9','#6b2d8b'],
                      labels={'val':'Prevalence Rate per 100,000','location_name':'Country'})
         fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                           font=dict(family='Inter'), showlegend=False,
@@ -225,7 +225,7 @@ def page_overview(clinical, gbd):
                          (gbd['metric_name']=='Rate') & (gbd['year']==2023)]
         merged = prev_2023.merge(dalys_2023[['location_name','val']], on='location_name', suffixes=('_prev','_dalys'))
         fig2 = px.scatter(merged, x='val_prev', y='val_dalys', text='location_name',
-                          color='val_prev', color_continuous_scale=['#e8d5f5','#6b2d8b'],
+                          color='val_prev', color_continuous_scale=['#b48ec9','#6b2d8b'],
                           labels={'val_prev':'Prevalence Rate','val_dalys':'DALYs Rate'},
                           size='val_prev', size_max=30)
         fig2.update_traces(textposition='top center', textfont_size=9)
@@ -359,7 +359,7 @@ def page_trends(gbd):
     change.columns = ['Country', '1990 Rate', '2023 Rate', 'Change (%)']
 
     fig2 = px.bar(change, x='Change (%)', y='Country', orientation='h',
-                  color='Change (%)', color_continuous_scale=['#e8d5f5','#6b2d8b'],
+                  color='Change (%)', color_continuous_scale=['#b48ec9','#6b2d8b'],
                   title=f'% Change in PCOS {measure.split("(")[0].strip()} Rate (1990–2023)')
     fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                        font=dict(family='Inter'), showlegend=False,
@@ -400,7 +400,7 @@ def page_obesity(gbd, obesity):
         st.markdown('<div class="section-header">PCOS Prevalence vs Female Obesity Rate</div>', unsafe_allow_html=True)
         fig = px.scatter(merged, x='Obesity_Pct', y='PCOS_Rate',
                          text='location_name', size='PCOS_Rate',
-                         color='PCOS_Rate', color_continuous_scale=['#e8d5f5','#6b2d8b'],
+                         color='PCOS_Rate', color_continuous_scale=['#b48ec9','#6b2d8b'],
                          labels={'Obesity_Pct':'Female Obesity Rate (%)','PCOS_Rate':'PCOS Prevalence Rate per 100,000'})
         fig.update_traces(textposition='top center', textfont_size=9)
         fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
@@ -489,14 +489,14 @@ def page_patients(clinical):
     c1, c2 = st.columns(2)
     with c1:
         fig = px.histogram(df, x='BMI', color='PCOS_Label', nbins=30,
-                           color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                           color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                            barmode='overlay', opacity=0.75, title='BMI Distribution by PCOS Status')
         fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                           font=dict(family='Inter'), legend_title='', margin=dict(t=50))
         st.plotly_chart(fig, use_container_width=True)
     with c2:
         fig2 = px.box(df, x='PCOS_Label', y='WaistHip', color='PCOS_Label',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                       points='all', title='Waist:Hip Ratio by PCOS Status')
         fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), showlegend=False, margin=dict(t=50))
@@ -514,7 +514,7 @@ def page_patients(clinical):
         bmi_group = df.groupby(['BMI_Category','PCOS_Label']).size().reset_index(name='Count')
         fig4 = px.bar(bmi_group, x='BMI_Category', y='Count', color='PCOS_Label',
                       barmode='group',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                       title='BMI Category vs PCOS Status')
         fig4.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), legend_title='', margin=dict(t=50))
@@ -530,7 +530,7 @@ def page_patients(clinical):
                             var_name='Factor', value_name='Proportion')
         lm['Factor'] = lm['Factor'].map({'FastFood':'Fast Food','Exercise':'Regular Exercise'})
         fig5 = px.bar(lm, x='Factor', y='Proportion', color='PCOS_Label', barmode='group',
-                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'})
+                      color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'})
         fig5.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), legend_title='', margin=dict(t=20))
         st.plotly_chart(fig5, use_container_width=True)
@@ -538,7 +538,7 @@ def page_patients(clinical):
         preg = df.groupby(['PCOS_Label','Pregnant']).size().reset_index(name='Count')
         preg['Pregnant'] = preg['Pregnant'].map({1:'Pregnant',0:'Not Pregnant'})
         fig6 = px.bar(preg, x='PCOS_Label', y='Count', color='Pregnant', barmode='stack',
-                      color_discrete_sequence=['#9b59b6','#e8d5f5'])
+                      color_discrete_sequence=['#9b59b6','#b48ec9'])
         fig6.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), xaxis_title='', margin=dict(t=20))
         st.plotly_chart(fig6, use_container_width=True)
@@ -555,7 +555,7 @@ def page_hormones(clinical):
     c1, c2 = st.columns(2)
     with c1:
         fig = px.violin(clinical, x='PCOS_Label', y=selected, color='PCOS_Label', box=True,
-                        color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                        color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                         title=f'{hormones[selected]} Distribution')
         fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                           font=dict(family='Inter'), showlegend=False, margin=dict(t=50))
@@ -563,7 +563,7 @@ def page_hormones(clinical):
     with c2:
         fig2 = px.histogram(clinical, x=selected, color='PCOS_Label', nbins=40,
                             barmode='overlay', opacity=0.75,
-                            color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                            color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                             title=f'{hormones[selected]} Frequency Distribution')
         fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), legend_title='', margin=dict(t=50))
@@ -573,7 +573,7 @@ def page_hormones(clinical):
     hormone_cols = ['FSH','LH','FSH_LH','AMH','TSH','PRL','VitD3']
     stats = clinical.groupby('PCOS_Label')[hormone_cols].mean().round(2).T
     st.markdown('<div class="section-header">Hormone Summary Statistics</div>', unsafe_allow_html=True)
-    st.dataframe(stats.style.highlight_max(axis=1, color='#e8d5f5'), use_container_width=True)
+    st.dataframe(stats.style.highlight_max(axis=1, color='#b48ec9'), use_container_width=True)
 
     st.markdown("---")
     corr_cols = ['FSH','LH','AMH','TSH','PRL','VitD3','BMI','PCOS']
@@ -602,7 +602,7 @@ def page_symptoms(clinical):
     sym_df = pd.DataFrame(sym_data)
 
     fig = px.bar(sym_df, x='Symptom', y='Prevalence (%)', color='PCOS Status', barmode='group',
-                 color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#e8d5f5'},
+                 color_discrete_map={'PCOS Positive':'#9b59b6','PCOS Negative':'#b48ec9'},
                  text='Prevalence (%)', title='Symptom Prevalence: PCOS+ vs PCOS−')
     fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     fig.update_layout(paper_bgcolor='white', plot_bgcolor='white',
@@ -621,7 +621,7 @@ def page_symptoms(clinical):
                                         line_color='#9b59b6', fillcolor='rgba(155,89,182,0.2)'))
         fig2.add_trace(go.Scatterpolar(r=neg_vals+[neg_vals[0]], theta=cats+[cats[0]],
                                         fill='toself', name='PCOS Negative',
-                                        line_color='#e8d5f5', fillcolor='rgba(232,213,245,0.3)'))
+                                        line_color='#b48ec9', fillcolor='rgba(232,213,245,0.3)'))
         fig2.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,100])),
                            paper_bgcolor='white', font=dict(family='Inter'),
                            legend=dict(orientation='h', y=-0.1), height=380, margin=dict(t=20))
@@ -630,7 +630,7 @@ def page_symptoms(clinical):
         cycle = clinical.groupby(['PCOS_Label','Cycle']).size().reset_index(name='Count')
         cycle['Cycle'] = cycle['Cycle'].map({2:'Regular',4:'Irregular'})
         fig3 = px.bar(cycle, x='PCOS_Label', y='Count', color='Cycle', barmode='stack',
-                      color_discrete_sequence=['#9b59b6','#e8d5f5'],
+                      color_discrete_sequence=['#9b59b6','#b48ec9'],
                       title='Menstrual Cycle Regularity by PCOS Status')
         fig3.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), xaxis_title='', margin=dict(t=50))
@@ -712,7 +712,7 @@ def page_predictor(clinical):
 
         importance = pd.DataFrame({'Feature':features,'Importance':model.feature_importances_}).sort_values('Importance', ascending=True).tail(10)
         fig2 = px.bar(importance, x='Importance', y='Feature', orientation='h',
-                      color='Importance', color_continuous_scale=['#e8d5f5','#6b2d8b'],
+                      color='Importance', color_continuous_scale=['#b48ec9','#6b2d8b'],
                       title='Top 10 Most Predictive Features')
         fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white',
                            font=dict(family='Inter'), showlegend=False, margin=dict(t=50), height=350)
